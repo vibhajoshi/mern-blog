@@ -1,6 +1,8 @@
 import { Button, Label, TextInput, Alert, Spinner } from 'flowbite-react';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { signInStart, signInSuccess, signInFailure } from '../redux/user/userSlice';
 
 export default function SignIn() {
   const [formData, setFormData] = useState({
@@ -8,9 +10,10 @@ export default function SignIn() {
     email: '',
     password: '',
   });
-  const [errorMessages, setErrorMessages] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const {loading, error: errorMessages} = useSelector(state => state.user);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  
 
   const validateForm = () => {
     const { email, password } = formData;
@@ -32,20 +35,19 @@ export default function SignIn() {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value.trim() });
-    setErrorMessages(null); // clear error as user types
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const validationError = validateForm();
-    if (validationError) {
-      return setErrorMessages(validationError);
+    if(!formData.email || !formData.password) 
+    {
+      return dispatch(signInFailure('Please fill all the fields'));
     }
 
     try {
-      setLoading(true);
-      setErrorMessages(null);
+      dispatch(signInStart());
+
       const res = await fetch('/api/auth/signin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -54,20 +56,18 @@ export default function SignIn() {
 
       const data = await res.json();
       
-      if (!res.ok) {
-        return setErrorMessages(data.message || 'Signin failed.');
+      if (data.success === false) {
+        dispatch(signInFailure(data.message));
       }
-      setLoading(false);
+    
       // Handle success (redirect or show success message)
       if (res.ok){
+        dispatch(signInSuccess(data));
         navigate('/');
       }
     } catch (error) {
-      setErrorMessages(error.message || 'Something went wrong. Please try again.');
-      setLoading(false);
-    } finally {
-      setLoading(false);
-    }
+      dispatch(signInFailure(error.message));
+    } 
   };
 
   return (
