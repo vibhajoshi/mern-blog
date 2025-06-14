@@ -125,7 +125,7 @@ export default function FooterCom() {
             <BsInstagram />
           </a>
           <a
-            href="https://www.twitter.com/"
+            href="https://www.x.com/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sky-500 text-2xl hover:text-sky-700"
