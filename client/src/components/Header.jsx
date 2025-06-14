@@ -6,13 +6,31 @@ import {
   NavbarToggle,
   TextInput,
 } from 'flowbite-react';
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { FaMoon } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
 
 export default function Header() {
   const path = useLocation().pathname;
+  const { currentUser } = useSelector((state) => state.user);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef();
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Debugging user data
+  console.log('Current User:', currentUser);
 
   return (
     <Navbar className="border-b-2">
@@ -39,10 +57,60 @@ export default function Header() {
         <AiOutlineSearch />
       </Button>
 
-      <div className="flex gap-2 md:order-2">
+      <div className="flex items-center gap-2 md:order-2 relative">
         <Button className="w-12 h-10 hidden sm:inline" color="gray" pill>
           <FaMoon />
         </Button>
+
+        {currentUser ? (
+          <div className="relative" ref={dropdownRef}>
+            <button onClick={() => setDropdownOpen(!dropdownOpen)}>
+              <img
+                src={
+                  currentUser?.profilePicture?.trim()
+                    ? currentUser.profilePicture
+                    : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        currentUser?.username || 'User'
+                      )}&background=random&bold=true`
+                }
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    currentUser?.username || 'User'
+                  )}&background=random&bold=true`;
+                }}
+                alt="User Avatar"
+                className="w-10 h-10 rounded-full border border-gray-300 object-cover bg-gray-100"
+              />
+            </button>
+
+            {dropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-50">
+                <div className="px-4 py-2 border-b">
+                  <p className="text-sm font-semibold">@{currentUser.username}</p>
+                  <p className="text-xs text-gray-600 truncate">{currentUser.email}</p>
+                </div>
+                <Link
+                  to="/dashboard?tab=profile"
+                  className="block px-4 py-2 hover:bg-gray-100 text-sm"
+                  onClick={() => setDropdownOpen(false)}
+                >
+                  Profile
+                </Link>
+                <hr />
+                <button
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                  onClick={() => {
+                    // Add sign out logic here
+                    setDropdownOpen(false);
+                  }}
+                >
+                  Sign out
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
           <Link to="/sign-in">
             <Button
               gradientDuoTone="purpleToBlue"
@@ -52,6 +120,7 @@ export default function Header() {
               Sign In
             </Button>
           </Link>
+        )}
 
         <NavbarToggle />
       </div>
