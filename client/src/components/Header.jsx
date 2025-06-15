@@ -20,6 +20,8 @@ export default function Header() {
   const { currentUser } = useSelector((state) => state.user);
   const dropdownRef = useRef();
   const { theme } = useSelector((state) => state.theme);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -88,7 +90,8 @@ export default function Header() {
             </button>
 
             {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-50">
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border rounded-lg shadow-lg z-50 text-gray-900 dark:text-gray-100">
+
                 <div className="px-4 py-2 border-b">
                   <p className="text-sm font-semibold">@{currentUser.username}</p>
                   <p className="text-xs text-gray-600 truncate">{currentUser.email}</p>
