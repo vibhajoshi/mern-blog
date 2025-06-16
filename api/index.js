@@ -6,6 +6,8 @@ import authRoutes from './routes/auth.route.js';
 import cookieParser from 'cookie-parser';
 
 
+
+
 dotenv.config(); 
 
 mongoose.connect(process.env.MONGO)
@@ -25,7 +27,6 @@ app.listen(3000, () => {
 });
 
 app.use('/api/user', userRoutes);
-
 app.use('/api/auth', authRoutes);
 
 app.use((err, req, res, next) => {
@@ -37,3 +38,4 @@ app.use((err, req, res, next) => {
         message
     });
 });
+
